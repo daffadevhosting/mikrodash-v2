@@ -1,0 +1,122 @@
+---
+layout: desktop
+title: All Users
+permalink: /users
+---
+
+<!-- DataTables CSS & JS CDN -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Daftar Pengguna Hotspot</h4>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+      <i class="bi bi-plus-lg me-1"></i> Tambah User
+    </button>
+  </div>
+
+  <div class="card bg-dark shadow-sm rounded-4">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table id="usersTable" class="table table-hover table-striped align-middle text-nowrap mb-0" style="width: 100%;">
+          <thead class="table-dark">
+            <tr>
+              <th>Username</th>
+              <th>Profile</th>
+              <th>Status</th>
+              <th>IP Address</th>
+              <th>Uptime</th>
+              <th>Download</th>
+              <th>Upload</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="table-dark"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).ready(function () {
+firebase.auth().onAuthStateChanged(async function(user) {
+  if (user) {
+    const token = await user.getIdToken();
+
+    fetch("{{site.localurl}}/php/getUsersTable.php", {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+        })
+        .then(res => res.json())
+        .then(data => {
+        if (Array.isArray(data)) {
+            $('#usersTable').DataTable({
+            data: data,
+            pageLength: 10,
+            columns: [
+                { data: 'username' },
+                { data: 'profile' },
+                { 
+                data: 'status',
+                render: function(data) {
+                    return data === "Online" 
+                    ? '<span style="color:green;font-weight:bold;">Online</span>' 
+                    : '<span style="color:gray;">Offline</span>';
+                }
+                },
+                { data: 'ip' },
+                { data: 'uptime' },
+                { data: 'download' },
+                { data: 'upload' }
+            ]
+            });
+        
+        } else {
+            showToast("Gagal", "Gagal memuat data pengguna.", "danger");
+        }
+        })
+        .catch(err => console.error("Fetch error:", err));
+        }
+    });
+});
+
+function loadHotspotUsers() {
+firebase.auth().onAuthStateChanged(async function(user) {
+  if (user) {
+    const token = await user.getIdToken();
+
+  fetch("p{{site.php_url}}/php/getUsersTable.php", {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+        })
+    .then(res => res.json())
+    .then(data => {
+      const table = $('#usersTable').DataTable();
+      table.clear();
+      data.users.forEach(user => {
+        table.row.add([
+          user.name,
+          user.profile,
+          user.status || 'offline',
+          user.address || '-',
+          user.uptime || '-',
+          user.bytes_out || '0',
+          user.bytes_in || '0'
+        ]);
+      });
+      table.draw();
+    });
+        }
+    });
+}
+</script>
+  {% include addUsersModal.html %}

@@ -1,0 +1,41 @@
+---
+layout: desktop
+title: Cli Terminal
+permalink: /mobile/cli-terminal
+---
+
+
+<div class="container mt-4">
+  <h4>Terminal Mikrotik</h4>
+  <div class="form-group">
+    <textarea id="terminalOutput" class="form-control text-white dark-blurry" rows="18" readonly></textarea>
+  </div>
+  <div class="input-group mt-2">
+    <input type="text" id="terminalInput" class="form-control text-white blurry" placeholder="Masukkan perintah...">
+    <button class="btn btn-primary" onclick="kirimPerintah()">Kirim</button>
+  </div>
+</div>
+
+<script>
+function kirimPerintah() {
+  const cmd = document.getElementById('terminalInput').value;
+  if (!cmd) return;
+
+  fetch('{{site.localurl}}/php/terminal.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `command=${encodeURIComponent(cmd)}`
+  })
+  .then(res => res.json())
+  .then(data => {
+    const out = document.getElementById('terminalOutput');
+    out.value += `> ${cmd}\n${data.output}\n`;
+    out.scrollTop = out.scrollHeight;
+    document.getElementById('terminalInput').value = '';
+  })
+  .catch(err => {
+    alert('Gagal kirim perintah');
+    console.error(err);
+  });
+}
+</script>

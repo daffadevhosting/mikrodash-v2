@@ -1,0 +1,19 @@
+---
+layout: desktop
+permalink: /dashboard
+---
+
+
+<div class="container-fluid mt-4">
+  {% include miniCard.html %}
+  <div class="row my-4">
+    <!-- Kolom Glow Bandwidth -->
+  {% include glowRing.html %}
+    <!-- Kolom Tabel User Aktif -->
+  {% include trafficChart.html %}
+    <!-- Kolom Glow Bandwidth -->
+  {% include log.html %}
+    <!-- Kolom Tabel User Aktif -->
+  {% include userActive.html %}
+  </div>
+</div>

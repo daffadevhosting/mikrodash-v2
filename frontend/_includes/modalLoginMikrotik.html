@@ -1,0 +1,65 @@
+<div class="modal fade" id="modalLoginMikrotik" tabindex="-1"  data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <form id="mikrotikForm" class="modal-content blurry">
+      <div class="modal-header">
+        <h5 class="modal-title">Login Mikrotik</h5>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="form-control dark-blurry mb-2" name="ip" current-ip="ip"  placeholder="IP Mikrotik" required>
+        <input type="text" class="form-control dark-blurry mb-2" name="username" current-username="username" placeholder="Username" required>
+        <input type="password" class="form-control dark-blurry mb-2" name="password" current-password="password" placeholder="Password" required>
+      </div>
+        <p id="error-msg" class="text-center"></p>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-outline-success btn-sm shadow">Login & Simpan</button>
+      </div>
+    </form>
+<script>
+firebase.auth().onAuthStateChanged(function(user) {
+  if (!user) {
+    document.getElementById("error-msg").innerText = "❌ Anda belum login.";
+    return;
+  }
+
+  document.getElementById("mikrotikForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const msg = document.getElementById("error-msg");
+    msg.innerText = "🔄 Memeriksa koneksi...";
+
+    user.getIdToken().then(function (token) {
+      console.log("JWT Token:", token);
+      const formData = new FormData(e.target);
+
+      const ip = formData.get("ip");
+      const username = formData.get("username");
+      const password = formData.get("password");
+
+      fetch("{{site.localurl}}/php/check_mikrotik.php", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ ip, username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          msg.innerText = "✅ Berhasil konek Mikrotik!";
+          window.location.href = "/info-perangkat";
+        } else {
+          msg.innerText = "❌ Gagal koneksi: " + (data.error || 'Unknown');
+        }
+      })
+      .catch(err => {
+        msg.innerText = "🚫 Error: " + err.message;
+      });
+    }).catch(err => {
+      msg.innerText = "Token Error: " + err.message;
+    });
+  });
+});
+</script>
+  </div>
+</div>

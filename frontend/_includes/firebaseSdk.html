@@ -1,0 +1,22 @@
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "{{ site.api_key }}",
+  authDomain: "{{ site.auth_domain }}",
+  databaseURL: "{{ site.database_url }}",
+  projectId: "{{ site.project_id }}",
+  storageBucket: "{{ site.storage_bucket }}",
+  messagingSenderId: "{{ site.sender_id }}",
+  appId: "{{ site.app_id }}"
+};
+
+  // Inisialisasi Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+</script>

@@ -1,0 +1,42 @@
+<!-- Sidebar -->
+<div class="sidebar blurry" id="sidebar">
+<!-- Toggle Button -->
+<div class="d-flex flex-column justify-content-between">
+<button class="btn btn-outline-dark toggle-btn" id="toggleSidebar">
+  <i class="bi bi-list text-white"></i>
+</button>
+<span class="text-white fw-bold mt-2 text-end"><h4>{{site.title}}</h4></span>
+  </div>
+  <ul class="nav pt-1 flex-column">
+    <li class="nav-item">
+      <a href="/dashboard" class="nav-link"><i class="bi bi-house"></i><span>Dashboard</span></a>
+    </li>
+    <li class="nav-item">
+      <a href="/users" class="nav-link"><i class="bi bi-person"></i><span>Users</span></a>
+    </li>
+    <li class="nav-item">
+      <a href="/hotspot" class="nav-link"><i class="bi bi-wifi"></i><span>Hotspot</span></a>
+    </li>
+    <li class="nav-item">
+      <a href="/settings" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a>
+    </li>
+    <li class="nav-item">
+      <a href="/cli-terminal" class="nav-link"><i class="bi bi-terminal"></i><span>Termux</span></a>
+    </li>
+    <li class="nav-item">
+      <a href="javascript:;" onclick="logout()" class="nav-link"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </li>
+  </ul>
+  <script>
+      // Fungsi logout
+  function logout() {
+    firebase.auth().signOut().then(function() {
+      // Logout berhasil
+      console.log("User signed out.");
+      window.location.href = "/login";
+    }).catch(function(error) {
+      console.error("Logout error:", error);
+    });
+  }
+  </script>
+</div>

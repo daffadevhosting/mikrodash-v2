@@ -1,0 +1,67 @@
+---
+layout: desktop
+permalink: /info-perangkat
+---
+
+<div class="card mt-3 bg-dark text-white">
+  <div class="card-header justify-content-between align-items-center">
+    Info Perangkat MikroTik
+
+<a href="javascript:;" onclick="logout()" class="nav-link"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+  </div>
+  <div class="card-body" id="mikrotik-info">
+    <div class="text-muted">Memuat data...</div>
+  </div>
+</div>
+
+<script>
+firebase.auth().onAuthStateChanged(async function(user) {
+  if (user) {
+    const token = await user.getIdToken();
+
+    fetch('{{site.localurl}}/php/get_mikrotik_info.php', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const info = data.data;
+        let html = `
+          <ul class="list-group">
+            <li class="list-group-item"><strong>Uptime:</strong> ${info['uptime']}</li>
+            <li class="list-group-item"><strong>Versi:</strong> ${info['version']}</li>
+            <li class="list-group-item"><strong>Board:</strong> ${info['board-name']}</li>
+            <li class="list-group-item"><strong>CPU:</strong> ${info['cpu']} @ ${info['cpu-frequency']} MHz (${info['cpu-load']}%)</li>
+            <li class="list-group-item"><strong>RAM:</strong> ${info['free-memory']} / ${info['total-memory']}</li>
+            <li class="list-group-item"><strong>Storage:</strong> ${info['free-hdd-space']} / ${info['total-hdd-space']}</li>
+            <li class="list-group-item"><strong>Platform:</strong> ${info['platform']} (${info['architecture-name']})</li>
+          </ul>
+        `;
+        document.getElementById('mikrotik-info').innerHTML = html;
+      } else {
+        document.getElementById('mikrotik-info').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+      }
+    })
+    .catch(err => {
+      document.getElementById('mikrotik-info').innerHTML = `<div class="alert alert-danger">Fetch error: ${err}</div>`;
+    });
+  }
+});
+</script>
+
+  <script>
+      // Fungsi logout
+  function logout() {
+    firebase.auth().signOut().then(function() {
+      // Logout berhasil
+      console.log("User signed out.");
+      window.location.href = "/login";
+    }).catch(function(error) {
+      console.error("Logout error:", error);
+    });
+  }
+  </script>

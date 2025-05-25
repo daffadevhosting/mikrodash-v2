@@ -1,0 +1,19 @@
+---
+layout: none
+---
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: page.lang | default: 'id | ID' }}">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirecting...</title>
+    <script>
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      console.log("Device Detected:", isMobile ? "Mobile" : "Desktop");
+      const layout = "{{ site.baseurl }}" + (isMobile ? "/mobile" : "/desktop");
+      window.location.href = layout;
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>

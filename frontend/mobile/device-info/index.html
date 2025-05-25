@@ -1,0 +1,269 @@
+---
+layout: none
+title: Informasi Perangkat Mikrotik
+permalink: /mobile/
+---
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: page.lang | default: 'en' }}">
+
+  {% include head.html %}
+
+<body class="vh-100">
+  {% include liveToast.html %}
+<style>
+.traffic-container {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  padding: 40px 0;
+}
+.ring {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(#000, #111);
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+.ring::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 50%;
+  background: conic-gradient(#00f 0%, #00f 50%, #000 0%);
+  filter: blur(8px);
+  z-index: -1;
+}
+.upload-ring::before {
+  background: conic-gradient(#0f0 0%, #0f0 40%, #000 0%);
+}
+.download-ring, .upload-ring {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #222;
+}
+
+.download-ring.glow::before,
+.upload-ring.glow::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(218, 0, 0, 0.753), transparent 70%);
+  box-shadow: 0 0 15px rgba(255, 72, 0, 0.664);
+  z-index: -1;
+}
+.label {
+  text-align: center;
+  color: #888;
+  margin-top: 25px;
+  font-weight: bold;
+}
+.speed {
+  text-align: center;
+  font-weight: bold;
+  color: #fff;
+  margin-top: 5px;
+}
+</style>
+<div class="flex-center">
+<div class="traffic-container">
+  <div class="ring download-ring">
+    <div class="label">Download</div>
+    <div class="speed" id="downloadSpeed">0 Mbps</div>
+  </div>
+  <div class="ring upload-ring">
+    <div class="label">Upload</div>
+    <div class="speed" id="uploadSpeed">0 Mbps</div>
+  </div>
+</div>
+
+<div class="container py-2">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card bg-dark text-white shadow-lg border-0 rounded-4">
+        <div class="card-body p-5">
+          <h2 class="mb-4 text-center fw-bold">Informasi Perangkat Mikrotik</h2>
+          
+          <div id="device-info" class="row gy-4"></div>
+          
+          <div class="text-center mt-4">
+            <a href="/dashboard" class="btn btn-outline-primary btn-lg rounded-pill">
+              <i class="bi bi-speedometer2 me-2"></i>Masuk ke Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+firebase.auth().onAuthStateChanged(async function(user) {
+  if (user) {
+    const token = await user.getIdToken();
+
+fetch("{{site.localurl}}/php/get_mikrotik_info.php", {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+    if (!data.success) {
+      document.getElementById("device-info").innerHTML = `<div class="text-center text-danger">${data.status}</div>`;
+      return;
+    }
+      const info = data.data;
+    const container = document.getElementById("device-info");
+    container.innerHTML = `
+  <div class="col-md-6">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-router fs-3 text-primary me-3"></i>
+      <div><strong>Model:</strong> ${info['board-name']}</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-cpu fs-3 text-secondary me-3"></i>
+      <div><strong>Versi:</strong> ${info['cpu']}<br/>@${info['cpu-frequency']} MHz (${info['cpu-load']}%)</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-clock-history fs-3 text-success me-3"></i>
+      <div><strong>Uptime:</strong> ${info.uptime}</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-person-badge fs-3 text-danger me-3"></i>
+      <div><strong>Identity:</strong> ${info.version}</div>
+    </div>
+  </div>
+        `;
+    });
+
+      function updateSpeed(upload, download) {
+        document.getElementById("downloadSpeed").textContent = download + " Mbps";
+        document.getElementById("uploadSpeed").textContent = upload + " Mbps";
+
+        const dRing = document.querySelector(".download-ring");
+        const uRing = document.querySelector(".upload-ring");
+
+        if (download > 10) {
+          dRing.classList.add("glow");
+        } else {
+          dRing.classList.remove("glow");
+        }
+
+        if (upload > 5) {
+          uRing.classList.add("glow");
+        } else {
+          uRing.classList.remove("glow");
+        }
+      }
+    }
+});
+
+setInterval(() => {
+  fetch("{{site.localurl}}/php/ringBandwidth.php")
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        updateSpeed(data.upload, data.download);
+      }
+    })
+    .catch(err => console.error("Error fetch data Mikrotik:", err));
+}, 2000);
+
+</script>
+  {% include modalLoginMikrotik.html %}
+<script>
+  firebase.auth().onAuthStateChanged(async function(user) {
+  if (user) {
+    const uid = user.uid;
+    const token = await user.getIdToken();
+
+    fetch('{{site.localurl}}/php/check_router.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ uid })
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success && res.router) {
+        // 🔐 Router ditemukan dan akan login otomatis ke Mikrotik
+        fetch('{{site.localurl}}/php/get_mikrotik_info.php', {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+         // window.location.href = "/info-perangkat";
+          } else {
+            tampilkanModalLoginMikrotik();
+          }
+        });
+      } else {
+        // ❌ Tidak ada router atau UID tidak cocok
+        tampilkanModalLoginMikrotik();
+      }
+    });
+  }
+});
+
+function tampilkanModalLoginMikrotik() {
+  const modal = new bootstrap.Modal(document.getElementById('modalLoginMikrotik'));
+  modal.show();
+}
+
+firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      const uid = user.uid;
+
+      firebase.database().ref("users/" + uid + "/isAdmin").once("value")
+        .then(function(snapshot) {
+          const isAdmin = snapshot.val();
+
+          if (isAdmin === true) {
+            console.log("Akses admin disetujui");
+          } else {
+                showToast("Peringatan", "Akses ditolak. Kamu bukan admin.", "warning");
+            firebase.auth().signOut().then(() => {
+              window.location.href = "/403";
+            });
+          }
+        })
+        .catch(function(error) {
+          console.error("Gagal mengambil data admin:", error);
+            showToast("Maaf", "Gagal mengambil data admin: Akses di tolak", "danger");
+          window.location.href = "/403";
+        });
+
+    } else {
+      showToast("Warning", "Silakan login terlebih dahulu.", "warning");
+      window.location.href = "/login";
+    }
+  });
+</script>
+<script src="{{ '/assets/js/alert.js' | relative_url }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+<script src="{{ '/assets/vendor/bootstrap/bootstrap/dist/js/bootstrap.min.js' | relative_url }}" crossorigin="anonymous"></script>
+</body>
+</html>

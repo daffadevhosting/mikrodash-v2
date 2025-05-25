@@ -1,0 +1,108 @@
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addUserModalLabel">Tambah User Hotspot</h5>
+        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <form id="hotspotUserForm">
+          <div class="mb-3">
+            <label for="username" class="form-label">Nama Pengguna</label>
+            <input type="text" class="form-control" id="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Kata Sandi</label>
+            <input type="text" class="form-control" id="password" required>
+          </div>
+          <div class="mb-3">
+            <label for="profile-select" class="form-label">Profile</label>
+            <select class="form-select" id="profile-select" required>
+                <option value="">Loading...</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="sharedUsers" class="form-label">Max Shared Users</label>
+            <input type="number" class="form-control" id="sharedUsers" placeholder="1">
+          </div>
+          <div class="mb-3">
+            <label for="comment" class="form-label">Komentar</label>
+            <input type="text" class="form-control" id="comment">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary" onclick="submitHotspotUser()">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function submitHotspotUser() {
+const data = {
+  username: document.getElementById('username').value,
+  password: document.getElementById('password').value,
+  profile: document.getElementById('profile-select').value,
+  shared_users: document.getElementById('sharedUsers').value,
+  comment: document.getElementById('comment').value
+};
+
+  if (!data.username || !data.password || !data.profile) {
+    showToast("Perhatian", "Nama pengguna, password, dan profile wajib diisi", "warning");
+    return;
+  }
+console.log(data);
+
+  fetch("{{site.php_url}}/php/addHotspotUser.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(response => {
+    if (response.success) {
+      showToast("Berhasil", "User hotspot berhasil ditambahkan!", "success");
+      document.getElementById("hotspotUserForm").reset();
+      loadHotspotUsers();
+      const modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
+      modal.hide();
+    } else {
+      showToast("Gagal", "Gagal menambahkan user. " + (response.message || ""), "danger");
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    showToast("Bahaya", "Terjadi kesalahan saat menyimpan data", "danger");
+  });
+}
+
+function loadProfiles() {
+  fetch('{{site.php_url}}/php/getHotspotProfiles.php')
+    .then(res => res.json())
+    .then(data => {
+      const select = document.getElementById('profile-select');
+      select.innerHTML = ''; // clear default option
+
+      if (data.success && data.profiles.length) {
+        data.profiles
+        .filter(p => p.name && p.name.trim() !== "")
+        .forEach(p => {
+          const option = document.createElement('option');
+          option.value = p.name;
+          option.textContent = `${p.name} (${p["rate-limit"] || 'no limit'})`;
+          select.appendChild(option);
+        });
+      } else {
+        select.innerHTML = '<option value="">No profiles found</option>';
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById('profile-select').innerHTML = '<option value="">Gagal memuat</option>';
+    });
+}
+
+// Panggil saat modal dibuka (misal saat tombol diklik)
+document.getElementById('addUserModal').addEventListener('show.bs.modal', loadProfiles);
+</script>

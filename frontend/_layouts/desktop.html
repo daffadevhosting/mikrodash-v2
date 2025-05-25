@@ -1,0 +1,124 @@
+---
+layout: none
+title: Desktop UI
+---
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: page.lang | default: 'id | ID' }}">
+  <head>
+    <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>{% if page.title %}{{ page.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
+  <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 | escape }}">
+
+    <link rel="stylesheet" href="{{ '/assets/vendor/bootstrap/bootstrap/dist/css/bootstrap.min.css' | relative_url }}">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <link rel="canonical" href="{{ page.url | replace:'index.html','' | absolute_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+  {% feed_meta %}
+  {% include firebaseSdk.html %}
+  </head>
+  <body class="vh-100 p-2 text-white">
+
+  {% include sidebar.html %}
+  
+  {% include navbar.html %}
+    <!-- Main Content -->
+	<div class="content" id="mainContent">
+		<div class="container mt-4">
+			  {{ content }}
+		</div>
+	</div>
+<script>
+  firebase.auth().onAuthStateChanged(async function(user) {
+  if (user) {
+    const uid = user.uid;
+    const token = await user.getIdToken();
+
+    fetch('{{site.localurl}}/php/check_router.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ uid })
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success && res.router) {
+        // 🔐 Router ditemukan dan akan login otomatis ke Mikrotik
+        fetch('{{site.localurl}}/php/get_mikrotik_info.php', {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+         // window.location.href = "/info-perangkat";
+          } else {
+            tampilkanModalLoginMikrotik();
+          }
+        });
+      } else {
+        // ❌ Tidak ada router atau UID tidak cocok
+        tampilkanModalLoginMikrotik();
+      }
+    });
+  }
+});
+
+function tampilkanModalLoginMikrotik() {
+  const modal = new bootstrap.Modal(document.getElementById('modalLoginMikrotik'));
+  modal.show();
+}
+</script>
+<div id="globalAlert" class="alert d-none" role="alert"></div>
+  {% include liveToast.html %}
+  {% include modalLoginMikrotik.html %}
+<script>
+  const toggleBtn = document.getElementById('toggleSidebar');
+  const sidebar = document.getElementById('sidebar');
+  const content = document.getElementById('mainContent');
+
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    content.classList.toggle('collapsed');
+  });
+  
+firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      const uid = user.uid;
+
+      firebase.database().ref("users/" + uid + "/isAdmin").once("value")
+        .then(function(snapshot) {
+          const isAdmin = snapshot.val();
+
+          if (isAdmin === true) {
+            console.log("Akses admin disetujui");
+          } else {
+                showToast("Peringatan", "Akses ditolak. Kamu bukan admin.", "warning");
+            firebase.auth().signOut().then(() => {
+              window.location.href = "/403";
+            });
+          }
+        })
+        .catch(function(error) {
+          console.error("Gagal mengambil data admin:", error);
+            showToast("Maaf", "Gagal mengambil data admin: Akses di tolak", "danger");
+          window.location.href = "/403";
+        });
+
+    } else {
+      showToast("Warning", "Silakan login terlebih dahulu.", "warning");
+      window.location.href = "/login";
+    }
+  });
+</script>
+<script src="{{ '/assets/js/alert.js' | relative_url }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+<script src="{{ '/assets/vendor/bootstrap/bootstrap/dist/js/bootstrap.min.js' | relative_url }}" crossorigin="anonymous"></script>
+  </body>
+</html>

@@ -1,0 +1,63 @@
+---
+layout: none
+title: 404 - Tidak Ditemukan
+permalink: /404
+---
+
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: page.lang | default: 'en' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{page.title}}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #0f111a;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 6rem;
+      margin: 0;
+      color: #ff4d4f;
+      text-shadow: 0 0 10px #ff4d4f;
+    }
+
+    p {
+      font-size: 1.5rem;
+      color: #cccccc;
+    }
+
+    .button {
+      margin-top: 2rem;
+      padding: 0.75rem 2rem;
+      background-color: transparent;
+      color: #ff4d4f;
+      border: 2px solid #ff4d4f;
+      border-radius: 8px;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #ff4d4f;
+      color: #0f111a;
+    }
+  </style>
+</head>
+<body>
+  <h1>404</h1>
+  <p>Halaman yang kamu cari tidak ditemukan.</p>
+  <a href="/" class="button">Kembali ke Beranda</a>
+</body>
+</html>

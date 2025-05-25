@@ -1,0 +1,41 @@
+# Welcome to Jekyll!
+
+port: 1111
+title: MikroDash v.2
+description: MikroDash, Mikrotik Hotspot Management.
+baseurl: "" 
+localurl: "<%= ENV['LOCAL_URL'] %>"
+url: "http://localhost:1111" 
+
+# Markdown settings
+markdown: kramdown
+
+# Sass settings
+sass:
+  sass_dir: assets/sass
+  style: :compressed
+
+# Build settings
+exclude:
+  - package.json
+  - README.md
+  - CNAME
+  - assets/sass
+
+# Plugin settings
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - dotenv
+
+plugins_dir: _plugins
+
+# Firebase
+api_key: "<%= ENV['api_key'] %>"
+auth_domain: "<%= ENV['auth_domain'] %>"
+project_id: "<%= ENV['project_id'] %>"
+database_url: "<%= ENV['database_url'] %>"
+storage_bucket: "<%= ENV['storage_bucket'] %>"
+sender_id: "<%= ENV['sender_id'] %>"
+app_id: "<%= ENV['app_id'] %>"
+measure_id: "<%= ENV['measure_id'] %>"
