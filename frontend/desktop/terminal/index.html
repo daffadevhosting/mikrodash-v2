@@ -5,43 +5,111 @@ permalink: /cli-terminal
 ---
 
 
-<div class="container mt-4">
-  <h4>Terminal Mikrotik</h4>
-  <div class="form-group">
-    <textarea id="terminalOutput" class="form-control text-white dark-blurry" rows="18" readonly></textarea>
-  </div>
-  <div class="input-group mt-2">
-    <input type="text" id="terminalInput" class="form-control text-white blurry" placeholder="Masukkan perintah...">
-    <button class="btn btn-primary" onclick="kirimPerintah()">Kirim</button>
-  </div>
+<style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #terminal {
+      font-family: 'Courier New', monospace;
+      color: #00FF00 !important;
+      margin-top: -30px;
+      height: 100%;
+      box-sizing: border-box;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    .prompt {
+      font-family: 'Courier New', monospace;
+      display: inline;
+    }
+
+    .input-line {
+      font-family: 'Courier New', monospace;
+      display: inline;
+    }
+
+    input {
+      font-family: 'Courier New', monospace;
+      background: none;
+      border: none;
+      color: #00FF00 !important;
+      font-family: inherit;
+      font-size: 1em;
+      outline: none;
+      width: 80%;
+    }
+
+    ::selection {
+      background: rgba(0, 255, 0, 0.3);
+    }
+
+    .caret {
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+</style>
+
+<div id="terminal">
+  <div><span class="prompt">[admin@mikrodash] &gt; </span><span class="input-line"><input id="terminalInput" autofocus></span></div>
 </div>
 
 <script>
-function kirimPerintah() {
-firebase.auth().onAuthStateChanged(async function(user) {
-  if (user) {
-    const token = await user.getIdToken();
+  const input = document.getElementById("terminalInput");
+  const terminal = document.getElementById("terminal");
 
-  const cmd = document.getElementById('terminalInput').value;
-  if (!cmd) return;
+  input.addEventListener("keydown", async function(event) {
+    if (event.key === "Enter") {
+      const cmd = input.value;
+      const promptText = `[admin@mikrodash] > `;
+      const line = document.createElement("div");
+      line.textContent = promptText + cmd;
+      terminal.insertBefore(line, input.parentElement.parentElement);
 
-  fetch('{{site.localurl}}/php/terminal.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `command=${encodeURIComponent(cmd)}`
-    })
-    .then(res => res.json())
-    .then(data => {
-      const out = document.getElementById('terminalOutput');
-      out.value += `> ${cmd}\n${data.output}\n`;
-      out.scrollTop = out.scrollHeight;
-      document.getElementById('terminalInput').value = '';
-    })
-    .catch(err => {
-      alert('Gagal kirim perintah');
-      console.error(err);
-    });
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        printToTerminal("❌ Anda belum login.");
+        input.value = "";
+        return;
+      }
+
+      const token = await user.getIdToken();
+
+      fetch("{{site.localurl}}/php/terminal.php", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token
+        },
+        body: new URLSearchParams({ command: cmd })
+      })
+      .then(res => res.json())
+      .then(data => {
+        printToTerminal(data.output || data.error || "❌ Gagal.");
+      })
+      .catch(err => {
+        printToTerminal("⚠️ Error: " + err.message);
+      });
+
+      input.value = "";
+      scrollToBottom();
     }
   });
-}
+
+  function printToTerminal(text) {
+    const output = document.createElement("div");
+    output.textContent = text;
+    terminal.insertBefore(output, input.parentElement.parentElement);
+  }
+
+  function scrollToBottom() {
+    terminal.scrollTop = terminal.scrollHeight;
+  }
 </script>

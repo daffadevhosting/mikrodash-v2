@@ -1,8 +1,90 @@
 ---
 layout: mobile
 title: Welcome
-permalink: /mobile
+description: UI belum tersedia. Silahkan beralih ke desktop / PC
+permalink: /mobile/
 ---
 
 
-      <h1 class="text-center">Ini Mobile ionic di folder /mobile</h1>
+      <ion-tabs>
+  <ion-tab tab="home">
+    <div id="home-page">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Dashboard</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <h3 class="example-content">{{page.description}}</h3>
+      </ion-content>
+    </div>
+  </ion-tab>
+  <ion-tab tab="users">
+    <div id="users-page">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Users</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <h3 class="example-content">{{page.description}}</h3>
+      </ion-content>
+    </div>
+  </ion-tab>
+  <ion-tab tab="hotspot">
+    <div id="hotspot-page">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Hotspot</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <h3 class="example-content">{{page.description}}</h3>
+      </ion-content>
+    </div>
+  </ion-tab>
+  <ion-tab tab="settings">
+    <div id="settings-page">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Settings</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <h3 class="example-content">{{page.description}}</h3>
+      </ion-content>
+    </div>
+  </ion-tab>
+
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="home">
+      <ion-icon name="apps-outline"></ion-icon>
+      Dash
+    </ion-tab-button>
+    <ion-tab-button tab="users">
+      <ion-icon name="people"></ion-icon>
+      Users
+    </ion-tab-button>
+    <ion-tab-button tab="hotspot">
+      <ion-icon name="wifi"></ion-icon>
+      Hotspot
+    </ion-tab-button>
+    <ion-tab-button tab="settings">
+      <ion-icon name="cog"></ion-icon>
+      Settings
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>
+
+<style>
+ion-content {
+      height: 100dvh;
+}
+  .example-content {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+</style>
