@@ -1,0 +1,18 @@
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% if page.title %}{{ page.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
+    <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 | escape }}">
+    <link rel="canonical" href="{{ page.url | replace:'index.html','' | absolute_url }}">
+    <script type="module" src="{{ '/assets/vendor/ionic/@ionic/core/dist/ionic/ionic.esm.js' | relative_url }}"></script>
+    <script nomodule src="{{ '/assets/vendor/ionic/@ionic/core/dist/ionic/ionic.js' | relative_url }}"></script>
+    <link rel="stylesheet" href="{{ '/assets/vendor/ionic/@ionic/core/css/ionic.bundle.css' | relative_url }}" />
+    <link rel="stylesheet" href="{{ '/assets/css/main.mobile.css' | relative_url }}">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  {% feed_meta %}
+  {% include firebaseSdk.html %}
+  </head>

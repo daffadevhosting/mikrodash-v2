@@ -1,0 +1,60 @@
+<ion-card color="dark">
+  <ion-card-header>
+    <ion-card-title class="text-white">📜 System Logs</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-list id="log-list" class="log-box ion-no-padding"></ion-list>
+  </ion-card-content>
+</ion-card>
+
+<style>
+.log-box {
+  max-height: 250px;
+  overflow-y: auto;
+}
+</style>
+<script>
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (user) {
+    const token = await user.getIdToken();
+
+    fetch("{{site.localurl}}/php/log_view.php", {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById('log-list');
+      list.innerHTML = '';
+
+      if (data.success) {
+        const logs = data.data;
+
+        logs.slice(0, 30).forEach(log => {
+          const item = document.createElement('ion-item');
+          item.innerHTML = `
+            <ion-label class="ion-text-wrap">
+              <strong>[${log.time}]</strong> <em>${log.topics}</em> - ${log.message}
+            </ion-label>
+          `;
+          list.appendChild(item);
+            list.scrollTop = list.scrollHeight;
+        });
+
+      } else {
+        const errorItem = document.createElement('ion-item');
+        errorItem.color = 'danger';
+        errorItem.innerHTML = `<ion-label>${data.message}</ion-label>`;
+        list.appendChild(errorItem);
+      }
+    })
+    .catch(err => {
+      const errorItem = document.createElement('ion-item');
+      errorItem.color = 'danger';
+      errorItem.innerHTML = `<ion-label>Fetch error: ${err}</ion-label>`;
+      document.getElementById('log-list').appendChild(errorItem);
+    });
+  }
+});
+</script>

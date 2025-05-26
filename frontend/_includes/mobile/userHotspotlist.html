@@ -1,0 +1,124 @@
+
+<ion-list class="ion-padding" id="usersList"></ion-list>
+
+<ion-spinner name="dots" id="usersSpinner" class="ion-margin-top" style="display: none;"></ion-spinner>
+
+<script>
+function setLoadingState(loading) {
+  document.getElementById("usersSpinner").style.display = loading ? "block" : "none";
+  document.getElementById("usersList").style.display = loading ? "none" : "block";
+}
+
+function renderUsersList(users) {
+  const listEl = document.getElementById("usersList");
+  listEl.innerHTML = "";
+
+  users.forEach((user, index) => {
+    const item = document.createElement("ion-item");
+    item.lines = "inset";
+    item.innerHTML = `
+      <ion-label class="ion-text-wrap">
+        <h2><strong>${index + 1}. ${user.username}</strong> (${user.profile})</h2>
+        <p>Status: <span style="color: ${user.status === 'Online' ? 'lime' : 'gray'}">${user.status}</span></p>
+        <p>IP: ${user.ip || '-'}</p>
+        <p>Uptime: ${user.uptime || '-'}</p>
+        <p>⬇ ${user.download || 0} MB | ⬆ ${user.upload || 0} MB</p>
+      </ion-label>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" color="success" onclick="topupUser('${user.username}')">
+          <ion-icon slot="icon-only" name="cash-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" color="danger" onclick="disconnectUser('${user.username}')">
+          <ion-icon slot="icon-only" name="power-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    `;
+    listEl.appendChild(item);
+  });
+}
+
+function topupUser(username) {
+  // Bisa tampilkan modal topup di sini
+  console.log("Topup user:", username);
+  showToast("Topup", `Topup untuk ${username}`, "success");
+}
+
+function disconnectUser(username) {
+  if (!confirm(`Yakin ingin disconnect ${username}?`)) return;
+
+  firebase.auth().currentUser.getIdToken().then(token => {
+    fetch("{{site.localurl}}/php/disconnectUser.php", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showToast("Disconnect", `${username} telah diputuskan.`, "success");
+        loadHotspotUsers(); // refresh list
+      } else {
+        showToast("Gagal", data.message || "Gagal disconnect user.", "danger");
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showToast("Error", "Gagal koneksi ke server.", "danger");
+    });
+  });
+}
+
+function loadHotspotUsers() {
+  setLoadingState(true);
+
+  firebase.auth().onAuthStateChanged(async function(user) {
+    if (user) {
+      const token = await user.getIdToken();
+
+      fetch("{{site.localurl}}/php/getUsersTable.php", {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          renderUsersList(data);
+        } else {
+          showToast("Error", "Data tidak valid", "danger");
+        }
+        setLoadingState(false);
+      })
+      .catch(err => {
+        console.error("Fetch error:", err);
+        setLoadingState(false);
+      });
+    }
+  });
+}
+
+loadHotspotUsers();
+</script>
+
+<style>
+ion-item {
+  --background: #1e1e2f;
+  --color: white;
+  margin: 0.5rem 0;
+  border-radius: 10px;
+}
+ion-label h2 {
+  font-size: 1rem;
+}
+ion-spinner {
+  display: block;
+  margin: auto;
+  color: #00f7ff;
+  transform: scale(1.5);
+}</style>
+

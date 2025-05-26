@@ -1,0 +1,16 @@
+  <ion-tab tab="home">
+    <ion-nav id="home-nav"></ion-nav>
+    <div id="home-page">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Dashboard</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-no-padding ion-gradient">
+        {% include /mobile/miniCard.html %}
+        {% include /mobile/trafficChart.html %}
+        {% include /mobile/userActive.html %}
+        {% include /mobile/log.html %}
+      </ion-content>
+    </div>
+  </ion-tab>

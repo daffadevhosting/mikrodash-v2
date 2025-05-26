@@ -1,0 +1,109 @@
+<ion-grid class="ion-no-padding">
+      <ion-card class="bg-dark text-white shadow-lg border-0">
+        <ion-card-header style="display: block;">
+          <ion-card-title class="ion-text-start text-white">
+            <i class="bi bi-graph-up-arrow text-info"></i> Realtime Traffic
+          </ion-card-title>
+    <ion-note id="downloadSpeed" class="download-ring"></ion-note>
+    <ion-note id="uploadSpeed" class="upload-ring"></ion-note>
+        </ion-card-header>
+        <ion-card-content>
+          <canvas id="trafficChart" height="60"></canvas>
+    <ion-note slot="end">
+        Distributed by <a href="https://github.com/putridinar" class="text-info" target="_blank">Putri Dinar</a>
+    </ion-note>
+        </ion-card-content>
+      </ion-card>
+</ion-grid>
+<style>
+.bg-dark {
+  background-color: #1e1e2f !important;
+}
+.text-white {
+  color: white !important;
+}
+.shadow-lg {
+  box-shadow: 0 0 30px rgba(0, 247, 255, 0.15) !important;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('trafficChart').getContext('2d');
+
+const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+gradient.addColorStop(0, '#00c6ff');
+gradient.addColorStop(1, '#0072ff');
+
+const trafficData = {
+  labels: Array.from({ length: 20 }, (_, i) => `-${20 - i}s`),
+  datasets: [{
+    label: 'Traffic Mbps',
+    data: Array.from({ length: 20 }, () => Math.random() * 10 + 2),
+    fill: true,
+    backgroundColor: gradient,
+    borderColor: '#00c6ff',
+    borderWidth: 2,
+    tension: 0.3,
+    pointRadius: 0
+  }]
+};
+
+const trafficChart = new Chart(ctx, {
+  type: 'line',
+  data: trafficData,
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#ccc' },
+        grid: { color: 'rgba(255,255,255,0.05)' }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { color: '#ccc' },
+        grid: { color: 'rgba(255,255,255,0.05)' }
+      }
+    }
+  }
+});
+
+function updateSpeed(upload, download) {
+  document.getElementById("downloadSpeed").textContent = download + " Mbps";
+  document.getElementById("uploadSpeed").textContent = upload + " Mbps";
+
+  const dRing = document.querySelector(".download-ring");
+  const uRing = document.querySelector(".upload-ring");
+
+  if (download > 10) dRing.classList.add("glow");
+  else dRing.classList.remove("glow");
+
+  if (upload > 5) uRing.classList.add("glow");
+  else uRing.classList.remove("glow");
+}
+
+setInterval(() => {
+  firebase.auth().currentUser.getIdToken().then(token => {
+    fetch("{{site.localurl}}/php/traffic_realtime.php", {
+      headers: { Authorization: "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const rx = data.download;
+        const tx = data.upload;
+
+        trafficData.labels.push("Now");
+        trafficData.labels.shift();
+        trafficData.datasets[0].data.push(rx);
+        trafficData.datasets[0].data.shift();
+
+        trafficChart.update();
+        updateSpeed(tx, rx);
+      }
+    });
+  });
+}, 1000);
+</script>

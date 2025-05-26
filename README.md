@@ -2,7 +2,14 @@
 
 **MikroDash v.2** adalah dashboard manajemen MikroTik berbasis web yang terintegrasi dengan **Firebase Authentication** dan **Realtime Database**. Proyek ini mempermudah pemantauan dan pengelolaan user hotspot MikroTik secara aman dan efisien, dengan fitur verifikasi login berbasis token serta pengambilan data real-time dari perangkat MikroTik.
 
+## UI Desktop (bootstrap 5.3)
 ![Dashboard Screenshot](/frontend/Screenshot-MikroDash-v.2.png)
+![Dashboard Screenshot](/frontend/Screenshot-Terminal.png)
+
+## UI Mobile (@ionic8)
+![Dashboard Screenshot](/frontend/m_(Pixel7).png)
+![Dashboard Screenshot](/frontend/m_(Pixel7-1).png)
+![Dashboard Screenshot](/frontend/m_(Pixel7-2).png)
 
 ## 🔧 Fitur Utama
 
@@ -14,8 +21,6 @@
 - 🌐 Backend menggunakan PHP + PEAR2 RouterOS Library
 - ☁️ Konfigurasi dan kredensial tersimpan aman di Firebase Realtime Database
 - 🚧 Dan lainnya dalam tahap pembangunan.
-
-### Untuk saat ini `UI` hanya tersedia di `DESKTOP / PC`.
 
 ## 📁 Struktur Direktori
 
@@ -40,10 +45,6 @@ mikrodash-v2/
 ├── .env
 └── README.md
 ```
-
-
-![Dashboard Screenshot](/frontend/Screenshot-Terminal.png)
-
 
 ## ⚙️ Instalasi & Setup
 

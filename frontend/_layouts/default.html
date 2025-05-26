@@ -9,7 +9,7 @@ layout: none
     <script>
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       console.log("Device Detected:", isMobile ? "Mobile" : "Desktop");
-      const layout = "{{ site.baseurl }}" + (isMobile ? "/mobile" : "/desktop");
+      const layout = "{{ site.baseurl }}" + (isMobile ? "/m" : "/desktop");
       window.location.href = layout;
     </script>
   </head>

@@ -1,0 +1,137 @@
+<ion-grid class="ion-no-padding">
+  <ion-row>
+    <ion-col size="6">
+      <ion-card color="primary" class="mini-card">
+        <ion-card-header>
+          <ion-card-subtitle>Total Users</ion-card-subtitle>
+          <ion-card-title id="total-users">...</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+    </ion-col>
+
+    <ion-col size="6">
+      <ion-card color="success" class="mini-card">
+        <ion-card-header>
+          <ion-card-subtitle>User Aktif</ion-card-subtitle>
+          <ion-card-title id="online-users">...</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col size="6">
+      <ion-card color="warning" class="mini-card">
+        <ion-card-header>
+          <ion-card-subtitle>Harian</ion-card-subtitle>
+          <ion-card-title id="daily-income">...</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+    </ion-col>
+
+    <ion-col size="6">
+      <ion-card color="tertiary" class="mini-card">
+        <ion-card-header>
+          <ion-card-subtitle>Bulanan</ion-card-subtitle>
+          <ion-card-title id="monthly-income">...</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+</ion-grid>
+<style>
+  .mini-card {
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  .mini-card ion-card-title {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: white;
+  }
+
+  .mini-card ion-card-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.8);
+  }
+
+  ion-card[color="warning"] {
+    --ion-card-background: linear-gradient(135deg, #ffd600, #ffab00);
+  }
+
+  ion-card[color="tertiary"] {
+    --ion-card-background: linear-gradient(135deg, #00cfff, #5e60ce);
+  }
+
+  ion-card[color="primary"],
+  ion-card[color="success"] {
+    --ion-card-background: var(--ion-color-base);
+  }
+</style>
+
+<script>
+firebase.auth().onAuthStateChanged(async function(user) {
+  if (user) {
+    const token = await user.getIdToken();
+
+fetch("{{site.localurl}}/php/hotspot_stats.php", {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
+    })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById("total-users").textContent = data.total_users;
+      document.getElementById("online-users").textContent = data.online_users;
+    } else {
+      document.getElementById("total-users").textContent = "Gagal";
+      document.getElementById("online-users").textContent = "Gagal";
+    }
+  })
+  .catch(err => {
+    document.getElementById("total-users").textContent = "Error";
+    document.getElementById("online-users").textContent = "Error";
+  });
+  
+function formatDate(date) {
+  return date.toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
+
+async function fetchPendapatan() {
+  const today = formatDate(new Date());
+  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const startMonthStr = startOfMonth.toISOString().slice(0, 10);
+
+  // Misal struktur: /transactions/{transactionId} dengan field "date" (YYYY-MM-DD) dan "amount"
+  
+  // Pendapatan Harian
+  let pendapatanHarian = 0;
+  await db.ref('transactions').orderByChild('date').equalTo(today).once('value', snapshot => {
+    snapshot.forEach(tx => {
+      pendapatanHarian += Number(tx.val().amount || 0);
+    });
+  });
+
+  // Pendapatan Bulanan
+  let pendapatanBulanan = 0;
+  await db.ref('transactions').orderByChild('date').startAt(startMonthStr).once('value', snapshot => {
+    snapshot.forEach(tx => {
+      pendapatanBulanan += Number(tx.val().amount || 0);
+    });
+  });
+
+  return { pendapatanHarian, pendapatanBulanan };
+}
+
+fetchPendapatan().then(({pendapatanHarian, pendapatanBulanan}) => {
+  document.getElementById('daily-income').textContent = pendapatanHarian.toLocaleString('id-ID', {style: 'currency', currency: 'IDR'});
+  document.getElementById('monthly-income').textContent = pendapatanBulanan.toLocaleString('id-ID', {style: 'currency', currency: 'IDR'});
+});
+  }
+});
+</script>

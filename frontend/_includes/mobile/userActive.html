@@ -1,0 +1,59 @@
+<ion-card class="shadow-card" color="dark">
+  <ion-card-header>
+    <ion-toolbar color="dark">
+      <ion-title class="text-white">User Aktif</ion-title>
+      <ion-buttons slot="end">
+        <ion-button fill="outline" color="light" size="small" id="topupTrigger">
+          ➕ Top Up User
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-list id="active-users-list" color="dark">
+      <!-- Diisi via JS -->
+    </ion-list>
+  </ion-card-content>
+</ion-card>
+
+<script>
+function loadActiveUsers() {
+  firebase.auth().onAuthStateChanged(async function(user) {
+    if (user) {
+      const token = await user.getIdToken();
+
+      fetch("{{site.localurl}}/php/getActiveUsers.php", {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(users => {
+        const ionItems = document.getElementById("active-users-list");
+        ionItems.innerHTML = ""; // Kosongkan dulu
+
+        users.forEach((u, index) => {
+          const item = document.createElement("ion-item");
+          item.innerHTML = `
+            <ion-label>
+              <h2><strong>${index + 1}. ${u.username}</strong></h2>
+              <p>IP: ${u.ip}</p>
+              <p>Uptime: ${u.uptime} | ⬇ ${u.download} MB | ⬆ ${u.upload} MB</p>
+            </ion-label>
+          `;
+          ionItems.appendChild(item);
+        });
+      })
+      .catch(err => {
+        console.error("Gagal memuat data user aktif:", err);
+      });
+    }
+  });
+}
+// Muat data tiap 5 detik
+//setInterval(loadActiveUsers, 5000);
+loadActiveUsers(); // Panggil pertama kali
+</script>

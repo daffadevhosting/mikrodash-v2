@@ -4,22 +4,85 @@ title: Mobile UI
 ---
 <!DOCTYPE html>
 <html lang="{{ site.lang | default: page.lang | default: 'id | ID' }}">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>{% if page.title %}{{ page.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
-    <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 | escape }}">
-    <link rel="canonical" href="{{ page.url | replace:'index.html','' | absolute_url }}">
-    <script type="module" src="{{ '/assets/vendor/ionic/@ionic/core/dist/ionic/ionic.esm.js' | relative_url }}"></script>
-    <script nomodule src="{{ '/assets/vendor/ionic/@ionic/core/dist/ionic/ionic.js' | relative_url }}"></script>
-    <link rel="stylesheet" href="{{ '/assets/vendor/ionic/@ionic/core/css/ionic.bundle.css' | relative_url }}" />
-    <link rel="stylesheet" href="{{ '/assets/css/mobile.css' | relative_url }}">
-  {% feed_meta %}
-  {% include firebaseSdk.html %}
-  </head>
+  {% include @ionicHead.html %}
   <body>
       {{ content }}
+<script>
+  firebase.auth().onAuthStateChanged(async function(user) {
+  if (user) {
+    const uid = user.uid;
+    const token = await user.getIdToken();
+
+    fetch('{{site.localurl}}/php/check_router.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ uid })
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success && res.router) {
+        // 🔐 Router ditemukan dan akan login otomatis ke Mikrotik
+        fetch('{{site.localurl}}/php/get_mikrotik_info.php', {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+         // window.location.href = "/info-perangkat";
+          } else {
+            openMikrotikModal();
+          }
+        });
+      } else {
+        // ❌ Tidak ada router atau UID tidak cocok
+        openMikrotikModal();
+      }
+    });
+  }
+});
+
+function openMikrotikModal() {
+  const modal = document.getElementById('modalLoginMikrotik');
+  modal.show();
+}
+  
+firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      const uid = user.uid;
+
+      firebase.database().ref("users/" + uid + "/isAdmin").once("value")
+        .then(function(snapshot) {
+          const isAdmin = snapshot.val();
+
+          if (isAdmin === true) {
+            console.log("Akses admin disetujui");
+          } else {
+                showToast("Peringatan", "Akses ditolak. Kamu bukan admin.", "warning");
+            firebase.auth().signOut().then(() => {
+              window.location.href = "/403";
+            });
+          }
+        })
+        .catch(function(error) {
+          console.error("Gagal mengambil data admin:", error);
+            showToast("Maaf", "Gagal mengambil data admin: Akses di tolak", "danger");
+          window.location.href = "/403";
+        });
+
+    } else {
+      showToast("Warning", "Silakan login terlebih dahulu.", "warning");
+      window.location.href = "/m/login";
+    }
+  });
+</script>
+  {% include ion-toast.html %}
+<script src="{{ '/assets/js/ion-toast.js' | relative_url }}"></script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
   </body>
 </html>

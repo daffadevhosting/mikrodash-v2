@@ -1,0 +1,126 @@
+<style>
+  ion-modal::part(backdrop) {
+    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .glass-modal {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
+  }
+
+  .glass-modal ion-input,
+  .glass-modal ion-button {
+    --background: rgba(255, 255, 255, 0.3);
+    --backdrop-filter: blur(8px);
+    --color: white;
+  }
+
+  .glass-modal ion-item {
+    --background: transparent;
+    --color: white;
+  }
+
+  .glass-modal ion-input::part(native) {
+    color: white;
+  }
+
+  .glass-modal h2 {
+    color: #ffffff;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  .glass-modal ion-button {
+    margin-top: 10px;
+  }
+
+  .glass-modal ion-title {
+    color: #ffffff;
+  }
+</style>
+<ion-modal id="modalLoginMikrotik" trigger="openMikrotikModal" backdrop-dismiss="false">
+  <div class="glass-modal">
+    <ion-header collapse="condense">
+      <ion-toolbar color="dark" style="--background: transparent;">
+        <ion-title>Login Mikrotik</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <form id="mikrotikForm">
+      <ion-list>
+        <ion-item>
+          <ion-input label="IP Mikrotik" label-placement="stacked" name="ip" required></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input label="Username" label-placement="stacked" name="username" required></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input label="Password" label-placement="stacked" name="password" type="password" required></ion-input>
+        </ion-item>
+      </ion-list>
+
+      <div class="ion-text-center ion-padding-top">
+        <ion-button expand="block" type="submit" color="success">Login & Simpan</ion-button>
+        <ion-button expand="block" color="medium" onclick="document.getElementById('modalLoginMikrotik').dismiss()">Batal</ion-button>
+      </div>
+
+      <p id="error-msg" class="ion-text-center ion-padding-top" style="color: var(--ion-color-warning);"></p>
+    </form>
+  </div>
+</ion-modal>
+
+<script>
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (!user) {
+      showToast("❌ Anda belum login.", "danger");
+      return;
+    }
+
+    document.getElementById("mikrotikForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const msg = document.getElementById("error-msg");
+      msg.textContent = "🔄 Memeriksa koneksi...";
+
+      const formData = new FormData(e.target);
+      const ip = formData.get("ip");
+      const username = formData.get("username");
+      const password = formData.get("password");
+
+      user.getIdToken().then(function (token) {
+        fetch("{{site.localurl}}/php/check_mikrotik.php", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ ip, username, password })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            showToast("✅ Berhasil konek Mikrotik!", "success");
+            document.getElementById("modalLoginMikrotik").dismiss();
+            setTimeout(() => {
+              window.location.href = "/info-perangkat";
+            }, 1000);
+          } else {
+            msg.textContent = "❌ Gagal koneksi: " + (data.error || 'Unknown');
+          }
+        })
+        .catch(err => {
+          msg.textContent = "🚫 Error: " + err.message;
+        });
+      }).catch(err => {
+        msg.textContent = "Token Error: " + err.message;
+      });
+    });
+  });
+</script>
+

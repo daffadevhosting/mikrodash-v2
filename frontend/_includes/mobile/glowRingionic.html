@@ -1,0 +1,131 @@
+<style>
+.glow-ring-wrapper {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.glow-ring-card {
+  background: #1e1e2f;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0, 247, 255, 0.15);
+  width: auto;
+}
+
+.glow-ring {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ring {
+  position: relative;
+  width: 130px;
+  height: 130px;
+}
+
+.ring svg {
+  transform: rotate(-90deg);
+}
+
+.ring-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #00f7ff;
+  font-weight: bold;
+  font-size: 1rem;
+  text-align: center;
+}
+ion-grid.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    text-align: center;
+}
+</style>
+<ion-grid class="grid">
+      <ion-card class="glow-ring-card">
+        <ion-card-header>
+          <ion-card-title color="white">Download</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="glow-ring">
+            <div class="ring">
+              <svg width="130" height="130">
+                <circle cx="65" cy="65" r="55" stroke="#2e2e2e" stroke-width="12" fill="none"/>
+                <circle id="ring-download" cx="65" cy="65" r="55" stroke="#00f7ff" stroke-width="12" fill="none"
+                  stroke-dasharray="345" stroke-dashoffset="345" stroke-linecap="round"/>
+              </svg>
+              <div class="ring-text">
+                <div id="speed-download">0 Mbps</div>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="glow-ring-card">
+        <ion-card-header>
+          <ion-card-title color="white">Upload</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="glow-ring">
+            <div class="ring">
+              <svg width="130" height="130">
+                <circle cx="65" cy="65" r="55" stroke="#2e2e2e" stroke-width="12" fill="none"/>
+                <circle id="ring-upload" cx="65" cy="65" r="55" stroke="#00f7ff" stroke-width="12" fill="none"
+                  stroke-dasharray="345" stroke-dashoffset="345" stroke-linecap="round"/>
+              </svg>
+              <div class="ring-text">
+                <div id="speed-upload">0 Mbps</div>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+  </ion-grid>
+<script>
+function updateGlowRing(id, speed, maxSpeed) {
+  const circle = document.getElementById(id);
+  const speedText = document.getElementById(id === 'ring-download' ? 'speed-download' : 'speed-upload');
+  const percent = Math.min(speed / maxSpeed, 1);
+  const radius = 55;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - percent);
+  circle.style.strokeDashoffset = offset;
+  speedText.textContent = speed.toFixed(1) + " Mbps";
+
+  if (speed > maxSpeed * 0.9) {
+    circle.style.stroke = "#ff0033";
+    speedText.style.color = "#ff0033";
+  } else {
+    circle.style.stroke = "#00f7ff";
+    speedText.style.color = "#00f7ff";
+  }
+}
+
+setInterval(() => {
+  firebase.auth().onAuthStateChanged(async function(user) {
+    if (user) {
+      const token = await user.getIdToken();
+
+      fetch("{{site.localurl}}/php/glowBandwidth.php", {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          updateGlowRing("ring-download", data.download, 5); 
+          updateGlowRing("ring-upload", data.upload, 3);
+        }
+      });
+    }
+  });
+}, 2000);
+</script>
