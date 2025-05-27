@@ -12,6 +12,7 @@
         <p id="error-msg" class="text-center"></p>
       <div class="modal-footer">
         <button type="submit" class="btn btn-outline-success btn-sm shadow">Login & Simpan</button>
+        <button onclick="logout()" class="btn btn-outline-danger btn-sm shadow">Logout</button>
       </div>
     </form>
 <script>
@@ -61,5 +62,15 @@ firebase.auth().onAuthStateChanged(function(user) {
   });
 });
 </script>
+  <script>
+  function logout() {
+    firebase.auth().signOut().then(function() {
+      console.log("User signed out.");
+      window.location.href = "/";
+    }).catch(function(error) {
+      console.error("Logout error:", error);
+    });
+  }
+  </script>
   </div>
 </div>

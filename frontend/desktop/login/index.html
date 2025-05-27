@@ -8,7 +8,7 @@ permalink: /login
 <!DOCTYPE html>
 <html lang="{{ site.lang | default: page.lang | default: 'id | ID' }}">
 
-  {% include head.html %}
+  {% include /desktop/head.html %}
 
   <body class="text-white vh-100">
 <style>
@@ -192,7 +192,7 @@ body {
     </div>
 </section>
 
-  {% include liveToast.html %}
+  {% include /desktop/liveToast.html %}
   <script>
     document.getElementById("adminLoginForm").addEventListener("submit", function(e) {
       e.preventDefault();

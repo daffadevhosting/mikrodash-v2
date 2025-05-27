@@ -22,9 +22,9 @@ title: Desktop UI
   </head>
   <body class="vh-100 p-2 text-white">
 
-  {% include sidebar.html %}
+  {% include /desktop/sidebar.html %}
   
-  {% include navbar.html %}
+  {% include /desktop/navbar.html %}
     <!-- Main Content -->
 	<div class="content" id="mainContent">
 		<div class="container mt-4">
@@ -76,8 +76,8 @@ function tampilkanModalLoginMikrotik() {
 }
 </script>
 <div id="globalAlert" class="alert d-none" role="alert"></div>
-  {% include liveToast.html %}
-  {% include modalLoginMikrotik.html %}
+  {% include /desktop/liveToast.html %}
+  {% include /desktop/modalLoginMikrotik.html %}
 <script>
   const toggleBtn = document.getElementById('toggleSidebar');
   const sidebar = document.getElementById('sidebar');

@@ -28,12 +28,10 @@
     </li>
   </ul>
   <script>
-      // Fungsi logout
   function logout() {
     firebase.auth().signOut().then(function() {
-      // Logout berhasil
       console.log("User signed out.");
-      window.location.href = "/login";
+      window.location.href = "/";
     }).catch(function(error) {
       console.error("Logout error:", error);
     });

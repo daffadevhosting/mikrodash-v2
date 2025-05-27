@@ -6,10 +6,10 @@ permalink: /desktop
 <!DOCTYPE html>
 <html lang="{{ site.lang | default: page.lang | default: 'en' }}">
 
-  {% include head.html %}
+  {% include /desktop/head.html %}
 
 <body class="vh-100">
-  {% include liveToast.html %}
+  {% include /desktop/liveToast.html %}
 <style>
 .traffic-container {
   display: flex;
@@ -188,7 +188,7 @@ setInterval(() => {
 }, 2000);
 
 </script>
-  {% include modalLoginMikrotik.html %}
+  {% include /desktop/modalLoginMikrotik.html %}
 <script>
   firebase.auth().onAuthStateChanged(async function(user) {
   if (user) {
