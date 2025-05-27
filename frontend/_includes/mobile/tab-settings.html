@@ -6,33 +6,52 @@
           <ion-title>Settings</ion-title>
         </ion-toolbar>
       </ion-header>
-        <ion-content class="ion-padding">
-          <ion-list>
-            <ion-item button detail lines="inset" onclick="openRouterSetting()">
-              <ion-icon color="light" name="wifi-outline" slot="start"></ion-icon>
-              <ion-label>Setting Router</ion-label>
-            </ion-item>
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-item button detail lines="inset" onclick="openEditRouterModal()">
+      <ion-icon color="light" name="wifi-outline" slot="start"></ion-icon>
+      <ion-label>Setting Router</ion-label>
+    </ion-item>
 
-            <ion-item button detail lines="inset" onclick="openUserProfileSetting()">
-              <ion-icon color="light" name="people-outline" slot="start"></ion-icon>
-              <ion-label>Setting User Profile</ion-label>
-            </ion-item>
+    <ion-item button detail lines="inset" onclick="openUserProfileSetting()">
+      <ion-icon color="light" name="people-outline" slot="start"></ion-icon>
+      <ion-label>Setting User Profile</ion-label>
+    </ion-item>
 
-            <ion-item button detail lines="inset" onclick="openLoginScriptSetting()">
-              <ion-icon color="light" name="code-slash-outline" slot="start"></ion-icon>
-              <ion-label>Input Script On-Login</ion-label>
-            </ion-item>
+    <ion-item button detail lines="inset" onclick="openLoginScriptSetting()">
+      <ion-icon color="light" name="code-slash-outline" slot="start"></ion-icon>
+      <ion-label>Input Script On-Login</ion-label>
+    </ion-item>
 
-            <ion-item button detail lines="inset" onclick="openTerminal()">
-              <ion-icon color="light" name="terminal-outline" slot="start"></ion-icon>
-              <ion-label>Terminal</ion-label>
-            </ion-item>
+    <ion-item button detail lines="inset" onclick="openTerminal()">
+      <ion-icon color="light" name="terminal-outline" slot="start"></ion-icon>
+      <ion-label>Terminal</ion-label>
+    </ion-item>
 
-            <ion-item button detail lines="inset" onclick="openAdminProfile()">
-              <ion-icon color="light" name="person-circle-outline" slot="start"></ion-icon>
-              <ion-label>Admin Profile</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-content>
+    <ion-item button detail lines="inset" onclick="openAdminProfile()">
+      <ion-icon color="light" name="person-circle-outline" slot="start"></ion-icon>
+      <ion-label>Admin Profile</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div class="ion-text-center ion-margin-top">
+    <ion-button color="danger" expand="block" onclick="logout()">
+      <ion-icon name="log-out-outline" slot="start"></ion-icon>
+      Logout
+    </ion-button>
+  <script>
+      // Fungsi logout
+  function logout() {
+    firebase.auth().signOut().then(function() {
+      // Logout berhasil
+      console.log("User signed out.");
+      window.location.href = "/login";
+    }).catch(function(error) {
+      console.error("Logout error:", error);
+    });
+  }
+  </script>
+  </div>
+</ion-content>
     </div>
   </ion-tab>

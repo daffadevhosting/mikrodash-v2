@@ -5,6 +5,11 @@ title: Mobile UI
 <!DOCTYPE html>
 <html lang="{{ site.lang | default: page.lang | default: 'id | ID' }}">
   {% include @ionicHead.html %}
+<script>
+function openMikrotikModal() {
+  showModal('modalLoginMikrotik');
+}
+</script>
   <body>
       {{ content }}
 <script>
@@ -46,11 +51,6 @@ title: Mobile UI
   }
 });
 
-function openMikrotikModal() {
-  const modal = document.getElementById('modalLoginMikrotik');
-  modal.show();
-}
-  
 firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
       const uid = user.uid;
@@ -80,6 +80,7 @@ firebase.auth().onAuthStateChanged(function(user) {
     }
   });
 </script>
+  {% include ion-modalMikrotik.html %}
   {% include ion-toast.html %}
 <script src="{{ '/assets/js/ion-toast.js' | relative_url }}"></script>
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>

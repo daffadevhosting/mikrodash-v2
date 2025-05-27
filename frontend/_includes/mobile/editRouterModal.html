@@ -1,0 +1,96 @@
+<ion-modal id="editRouterModal">
+  <ion-header>
+    <ion-toolbar color="tertiary">
+      <ion-title>Edit Router</ion-title>
+      <ion-buttons slot="end">
+        <ion-button onclick="closeEditRouterModal()">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding">
+    <form id="editRouterForm">
+      <ion-list>
+        <ion-item>
+          <ion-label position="floating">IP Address</ion-label>
+          <ion-input id="edit-ip" name="ip" type="text" required></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Username</ion-label>
+          <ion-input id="edit-username" name="username" type="text" required></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Password</ion-label>
+          <ion-input id="edit-password" name="password" type="password" required></ion-input>
+        </ion-item>
+      </ion-list>
+
+      <ion-text color="danger">
+        <p id="edit-error-msg" class="ion-padding-start ion-margin-top small"></p>
+      </ion-text>
+
+      <ion-button expand="block" type="submit" color="success" class="ion-margin-top">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Simpan Perubahan
+      </ion-button>
+    </form>
+  </ion-content>
+</ion-modal>
+<script>
+function openEditRouterModal(routerData) {
+  // Isi field dari data router yang mau diedit
+  document.getElementById('edit-ip').value = routerData.ip || '';
+  document.getElementById('edit-username').value = routerData.username || '';
+  document.getElementById('edit-password').value = routerData.password || '';
+
+  document.getElementById('edit-error-msg').textContent = '';
+  document.getElementById('editRouterModal').present();
+}
+
+function closeEditRouterModal() {
+  document.getElementById('editRouterModal').dismiss();
+}
+</script>
+<script>
+firebase.auth().onAuthStateChanged(function(user) {
+  if (!user) return;
+
+  document.getElementById("editRouterForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const msg = document.getElementById("edit-error-msg");
+    msg.textContent = "🔄 Memeriksa koneksi...";
+
+    const ip = document.getElementById("edit-ip").value.trim();
+    const username = document.getElementById("edit-username").value.trim();
+    const password = document.getElementById("edit-password").value;
+
+    user.getIdToken().then(function (token) {
+      fetch("{{site.localurl}}/php/check_mikrotik.php", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ ip, username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showToast("✅ Router berhasil diperbarui!", "success");
+          document.getElementById("editRouterModal").dismiss();
+          // Optional: reload data atau redirect
+        } else {
+          msg.textContent = "❌ Gagal koneksi: " + (data.error || 'Unknown');
+        }
+      })
+      .catch(err => {
+        msg.textContent = "🚫 Error: " + err.message;
+      });
+    });
+  });
+});
+</script>

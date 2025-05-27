@@ -24,52 +24,25 @@ ion-content {
   {% include /mobile/tab-users.html %}
   {% include /mobile/tab-hotspot.html %}
   {% include /mobile/tab-settings.html %}
-<script>
-firebase.auth().onAuthStateChanged(function(user) {
-    if (user) {
-      const uid = user.uid;
 
-      firebase.database().ref("users/" + uid + "/isAdmin").once("value")
-        .then(function(snapshot) {
-          const isAdmin = snapshot.val();
-
-          if (isAdmin === true) {
-            console.log("Akses admin disetujui");
-          } else {
-                showToast("Peringatan", "Akses ditolak. Kamu bukan admin.", "warning");
-            firebase.auth().signOut().then(() => {
-              window.location.href = "/403";
-            });
-          }
-        })
-        .catch(function(error) {
-          console.error("Gagal mengambil data admin:", error);
-            showToast("Maaf", "Gagal mengambil data admin: Akses di tolak", "danger");
-          window.location.href = "/403";
-        });
-
-    } else {
-      showToast("Warning", "Silakan login terlebih dahulu.", "warning");
-      window.location.href = "/m/login";
-    }
-  });
-</script>
   {% include /mobile/ion-tabBarbottom.html %}
 </ion-tabs>
+  {% include /mobile/editRouterModal.html %}
+  {% include /mobile/userProfileModal.html %}
+  {% include /mobile/onliginScript.html %}
 <script>
-function openRouterSetting() {
-  console.log("🔧 Setting Router");
-  // showModal('router-setting-modal');
+function openEditRouterModal() {
+  showModal('editRouterModal');
 }
 
 function openUserProfileSetting() {
   console.log("👥 Setting User Profile");
-  // showModal('user-profile-modal');
+  showModal('userProfileModal');
 }
 
 function openLoginScriptSetting() {
   console.log("💻 Input Script On-Login");
-  // showModal('script-onlogin-modal');
+  showModal('scriptModal');
 }
 
 function openTerminal() {

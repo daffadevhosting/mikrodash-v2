@@ -17,10 +17,19 @@ permalink: /cli-terminal
       font-family: 'Courier New', monospace;
       color: #00FF00 !important;
       margin-top: -30px;
-      height: 100%;
+      height: 90dvh;
       box-sizing: border-box;
       overflow-y: auto;
       white-space: pre-wrap;
+    }
+
+    #terminal::-webkit-scrollbar {
+      display: none;
+    }
+
+    #terminal {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
     }
 
     .prompt {

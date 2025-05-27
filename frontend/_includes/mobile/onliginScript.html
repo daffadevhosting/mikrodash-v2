@@ -1,0 +1,122 @@
+<ion-modal id="scriptModal">
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title id="scriptModalTitle">Script Input</ion-title>
+        <ion-buttons slot="end">
+          <ion-button onclick="closeScriptModal()">Tutup</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+  <form id="scriptForm">
+<ion-item>
+  <ion-label position="stacked">Nama Profile</ion-label>
+  <ion-select id="profileName" name="profileName" placeholder="-- Pilih Profile --" interface="popover" required>
+    <!-- Opsi dimuat dari JavaScript -->
+  </ion-select>
+</ion-item>
+        
+      <ion-textarea
+        id="on_login_script"
+        placeholder="Tulis script on-login di sini..."
+        autoGrow="true"
+      ></ion-textarea>
+        
+      <ion-textarea
+        id="scheduler_script"
+        placeholder="Tulis script scheduler di sini..."
+        autoGrow="true"
+      ></ion-textarea>
+
+<p id="saveScriptMsg" style="text-align:center;margin-top:0.5rem;"></p>
+      <ion-button expand="block" color="success" class="ion-margin-top" onclick="saveScript()">
+        Simpan Script
+      </ion-button>
+  </form>
+    </ion-content>
+</ion-modal>
+<script>
+async function saveScript() {
+  const form = document.getElementById("scriptForm");
+  if (!form) {
+    console.error("Form tidak ditemukan");
+    return;
+  }
+
+  const formData = new FormData(form);
+  const profileName = formData.get("profileName");
+  const onLogin = formData.get("on_login_script");
+  const scheduler = formData.get("scheduler_script");
+
+  firebase.auth().currentUser.getIdToken().then(token => {
+    fetch("{{site.localurl}}/php/saveScriptToMikrotik.php", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        profileName: profileName,
+        on_login_script: onLogin,
+        scheduler_script: scheduler
+      })
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        showToast("✅ Script berhasil disimpan!", "success");
+        document.querySelector("ion-modal#scriptModal").dismiss();
+      } else {
+        showToast("❌ Gagal simpan script: " + res.reason, "danger");
+      }
+    });
+  });
+}
+
+function closeScriptModal() {
+  document.getElementById("scriptModal").dismiss();
+}
+</script>
+
+<script>
+firebase.auth().onAuthStateChanged(async function(user) {
+  if (!user) return;
+
+  const token = await user.getIdToken();
+  const select = document.getElementById("profileName");
+
+  // Kosongkan isi dulu (jaga-jaga)
+  select.innerHTML = '';
+
+  // Opsi default
+  const defaultOption = document.createElement('ion-select-option');
+  defaultOption.value = '';
+  defaultOption.textContent = '-- Pilih Profile --';
+  select.appendChild(defaultOption);
+
+  // Fetch profile dari Mikrotik
+  fetch("{{site.localurl}}/php/getUserProfiles.php", {
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success && Array.isArray(data.profiles)) {
+      data.profiles.forEach(name => {
+        const opt = document.createElement("ion-select-option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+    } else {
+      const failedOption = document.createElement('ion-select-option');
+      failedOption.disabled = true;
+      failedOption.textContent = '⚠️ Gagal ambil data Mikrotik';
+      select.appendChild(failedOption);
+    }
+  });
+});
+</script>

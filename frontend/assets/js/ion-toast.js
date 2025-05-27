@@ -1,7 +1,10 @@
-  function showToast(message, color = 'primary', duration = 3000) {
-    const toast = document.getElementById('global-toast');
-    toast.message = message;
-    toast.color = color;
-    toast.duration = duration;
-    toast.present();
-  }
+function showToast(header, message, color = "primary") {
+  const toast = document.createElement("ion-toast");
+  toast.header = header;
+  toast.message = message;
+  toast.color = color;
+  toast.duration = 2000;
+  toast.position = "top";
+  document.body.appendChild(toast);
+  toast.present();
+}

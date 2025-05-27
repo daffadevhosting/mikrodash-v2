@@ -47,7 +47,7 @@ firebase.auth().onAuthStateChanged(function(user) {
       .then(data => {
         if (data.success) {
           msg.innerText = "✅ Berhasil konek Mikrotik!";
-          window.location.href = "/info-perangkat";
+          window.location.href = "/";
         } else {
           msg.innerText = "❌ Gagal koneksi: " + (data.error || 'Unknown');
         }

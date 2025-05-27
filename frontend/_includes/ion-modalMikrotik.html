@@ -1,9 +1,4 @@
 <style>
-  ion-modal::part(backdrop) {
-    backdrop-filter: blur(8px);
-    background: rgba(0, 0, 0, 0.4);
-  }
-
   .glass-modal {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
@@ -45,34 +40,33 @@
   }
 </style>
 <ion-modal id="modalLoginMikrotik" trigger="openMikrotikModal" backdrop-dismiss="false">
-  <div class="glass-modal">
     <ion-header collapse="condense">
-      <ion-toolbar color="dark" style="--background: transparent;">
-        <ion-title>Login Mikrotik</ion-title>
+      <ion-toolbar style="--background: transparent;">
+        <ion-title color="dark">Login Mikrotik</ion-title>
       </ion-toolbar>
     </ion-header>
 
+  <ion-content class="ion-padding">
     <form id="mikrotikForm">
       <ion-list>
-        <ion-item>
+        <ion-item color="dark">
           <ion-input label="IP Mikrotik" label-placement="stacked" name="ip" required></ion-input>
         </ion-item>
-        <ion-item>
+        <ion-item color="dark">
           <ion-input label="Username" label-placement="stacked" name="username" required></ion-input>
         </ion-item>
-        <ion-item>
+        <ion-item color="dark">
           <ion-input label="Password" label-placement="stacked" name="password" type="password" required></ion-input>
         </ion-item>
       </ion-list>
 
       <div class="ion-text-center ion-padding-top">
         <ion-button expand="block" type="submit" color="success">Login & Simpan</ion-button>
-        <ion-button expand="block" color="medium" onclick="document.getElementById('modalLoginMikrotik').dismiss()">Batal</ion-button>
       </div>
 
       <p id="error-msg" class="ion-text-center ion-padding-top" style="color: var(--ion-color-warning);"></p>
     </form>
-  </div>
+  </ion-content>
 </ion-modal>
 
 <script>
@@ -108,7 +102,7 @@
             showToast("✅ Berhasil konek Mikrotik!", "success");
             document.getElementById("modalLoginMikrotik").dismiss();
             setTimeout(() => {
-              window.location.href = "/info-perangkat";
+              window.location.href = "/";
             }, 1000);
           } else {
             msg.textContent = "❌ Gagal koneksi: " + (data.error || 'Unknown');

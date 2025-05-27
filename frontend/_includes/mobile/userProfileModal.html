@@ -1,0 +1,121 @@
+<ion-modal id="userProfileModal">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>User Profile</ion-title>
+      <ion-buttons slot="end">
+        <ion-button onclick="closeUserProfileModal()">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding">
+    <form id="userProfileForm">
+      <ion-list>
+        <ion-item>
+          <ion-label position="floating">Nama Profile</ion-label>
+          <ion-input name="name" id="profile-name" required></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Session Timeout (contoh: 01:00:00)</ion-label>
+          <ion-input name="session_timeout" id="session-timeout"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Idle Timeout (contoh: 00:05:00)</ion-label>
+          <ion-input name="idle_timeout" id="idle-timeout"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Shared Users</ion-label>
+          <ion-input type="number" name="shared_users" id="shared-users"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Rate Limit (rx/tx)</ion-label>
+          <ion-input name="rate_limit" id="rate-limit" placeholder="512k/1M"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Harga</ion-label>
+          <ion-input type="number" name="price" id="price"></ion-input>
+        </ion-item>
+      </ion-list>
+
+      <ion-text color="danger"><p id="profileMsg" class="ion-padding-start small"></p></ion-text>
+
+      <ion-button expand="block" type="submit" color="success" class="ion-margin-top">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Simpan Profile
+      </ion-button>
+    </form>
+  </ion-content>
+</ion-modal>
+<script>
+function openUserProfileModal(data = {}) {
+  document.getElementById("profile-name").value = data.name || "";
+  document.getElementById("session-timeout").value = data.session_timeout || "";
+  document.getElementById("shared-users").value = data.shared_users || "";
+  document.getElementById("rate-limit").value = data.rate_limit || "";
+  document.getElementById("price").value = data.price || "";
+  document.getElementById("user-profile-msg").textContent = "";
+  document.getElementById("userProfileModal").present();
+}
+
+function closeUserProfileModal() {
+  document.getElementById("userProfileModal").dismiss();
+}
+</script>
+<script>
+firebase.auth().onAuthStateChanged(function(user) {
+  if (!user) return;
+
+  document.getElementById("userProfileForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById("profileMsg");
+    msg.textContent = "🔄 Menyimpan...";
+
+    const formData = new FormData(e.target);
+    const profile = {
+      name: formData.get("name"),
+      session_timeout: formData.get("session_timeout"),
+      idle_timeout: formData.get("idle_timeout"),
+      shared_users: formData.get("shared_users"),
+      rate_limit: formData.get("rate_limit"),
+      price: parseInt(formData.get("price") || "0")
+    };
+
+    const token = await user.getIdToken();
+
+    // Simpan ke Mikrotik
+    const mikrotikRes = await fetch("{{site.localurl}}/php/setUserprofile.php", {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(profile)
+    }).then(res => res.json());
+
+    if (!mikrotikRes.success) {
+      msg.textContent = "❌ Gagal simpan ke Mikrotik: " + (mikrotikRes.message || "Unknown");
+      return;
+    }
+
+    // Simpan ke Firebase
+    await fetch("{{site.localurl}}/php/saveUserProfile.php", {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name: profile.name, price: profile.price })
+    });
+
+    msg.textContent = "✅ Profile berhasil disimpan!";
+    document.getElementById("userProfileModal").dismiss();
+  });
+});
+</script>
