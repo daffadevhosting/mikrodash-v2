@@ -12,3 +12,6 @@
 ion-card .list-md, ion-card .list-ios {
     background: #222428;
 }
+ion-list .list-md, ion-list .list-ios {
+    background: var(--ion-item-background, var(--ion-background-color, #1e1e2f))
+}

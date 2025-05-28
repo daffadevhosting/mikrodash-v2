@@ -1,0 +1,88 @@
+<ion-modal id="terminalModal">
+  <ion-header>
+    <ion-toolbar color="dark">
+      <ion-title>Terminal Mikrotik</ion-title>
+      <ion-buttons slot="end">
+        <ion-button onclick="closeTerminal()">Tutup</ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+<div id="terminal" style="display: contents;">
+  <ion-content class="ion-padding" style="--background:#000;--color:#0f0;">
+  <div><span id="prompt">[admin@mikrodash] &gt; </span></div>
+  </ion-content>
+<ion-footer>
+    <ion-toolbar color="dark">
+    <ion-item color="dark">
+      <ion-input
+        autofocus="true"
+        id="terminalInput"
+        placeholder="Ketik perintah Mikrotik..."
+        color="light"
+        style="color: #0f0;"
+        @keyup.enter="sendTerminalCommand()"
+      ></ion-input>
+<ion-buttons slot="end">
+    <ion-button color="success" onclick="sendTerminalCommand()">
+      <ion-icon slot="icon-only" name="send"></ion-icon>
+    </ion-button>
+</ion-buttons>
+    </ion-item>
+    </ion-toolbar>
+</ion-footer>
+</div>
+</ion-modal>
+<script>
+function closeTerminal() {
+  document.getElementById("terminalModal").dismiss();
+}
+
+  const input = document.getElementById("terminalInput");
+  const prompter = document.getElementById("prompt");
+  const terminal = document.getElementById("terminal");
+
+  async function sendTerminalCommand() {
+      const cmd = input.value;
+      const promptText = `[admin@mikrodash] > `;
+      const line = document.createElement("div");
+      line.textContent = promptText + cmd;
+      prompter.insertBefore(line, input.parentElement.parentElement);
+
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        printToTerminal("❌ Anda belum login.");
+        input.value = "";
+        return;
+      }
+
+      const token = await user.getIdToken();
+
+      fetch("{{site.localurl}}/php/terminal.php", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token
+        },
+        body: new URLSearchParams({ command: cmd })
+      })
+      .then(res => res.json())
+      .then(data => {
+        printToTerminal(data.output || data.error || "❌ Gagal.");
+      })
+      .catch(err => {
+        printToTerminal("⚠️ Error: " + err.message);
+      });
+
+      input.value = "";
+      scrollToBottom();
+    }
+
+  function printToTerminal(text) {
+    const output = document.createElement("div");
+    output.textContent = text;
+    terminal.insertBefore(output, input.parentElement.parentElement);
+  }
+
+  function scrollToBottom() {
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+</script>

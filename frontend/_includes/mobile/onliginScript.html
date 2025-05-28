@@ -1,3 +1,9 @@
+<style>
+.list-md, .list-ios {
+    background: var(--ion-item-background, var(--ion-background-color, #1e1e2f));
+    border-radius: 5px;
+}
+</style>
 <ion-modal id="scriptModal">
     <ion-header>
       <ion-toolbar color="primary">
@@ -18,15 +24,23 @@
 </ion-item>
         
       <ion-textarea
+        label="script on-login"
+        label-placement="floating"
+        fill="outline"
         id="on_login_script"
         placeholder="Tulis script on-login di sini..."
-        autoGrow="true"
+        auto-grow="true"
+        style="margin-top: 20px;overflow: visible;"
       ></ion-textarea>
         
       <ion-textarea
         id="scheduler_script"
+        label="script scheduler"
+        label-placement="floating"
+        fill="outline"
         placeholder="Tulis script scheduler di sini..."
-        autoGrow="true"
+        auto-grow="true"
+        style="margin-top: 20px;overflow: visible;"
       ></ion-textarea>
 
 <p id="saveScriptMsg" style="text-align:center;margin-top:0.5rem;"></p>
@@ -38,19 +52,23 @@
 </ion-modal>
 <script>
 async function saveScript() {
-  const form = document.getElementById("scriptForm");
-  if (!form) {
-    console.error("Form tidak ditemukan");
-    return;
-  }
+  const msg = document.getElementById("saveScriptMsg");
+  msg.textContent = "🔄 Menyimpan...";
 
-  const formData = new FormData(form);
-  const profileName = formData.get("profileName");
-  const onLogin = formData.get("on_login_script");
-  const scheduler = formData.get("scheduler_script");
+  try {
+    const profileName = document.getElementById("profileName").value;
+    const onLogin = document.getElementById("on_login_script").value;
+    const scheduler = document.getElementById("scheduler_script").value;
 
-  firebase.auth().currentUser.getIdToken().then(token => {
-    fetch("{{site.localurl}}/php/saveScriptToMikrotik.php", {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      msg.textContent = "❌ Tidak ada user login.";
+      return;
+    }
+
+    const token = await user.getIdToken();
+
+    const res = await fetch("{{site.localurl}}/php/saveScriptToMikrotik.php", {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + token,
@@ -61,21 +79,25 @@ async function saveScript() {
         on_login_script: onLogin,
         scheduler_script: scheduler
       })
-    })
-    .then(res => res.json())
-    .then(res => {
-      if (res.success) {
-        showToast("✅ Script berhasil disimpan!", "success");
-        document.querySelector("ion-modal#scriptModal").dismiss();
-      } else {
-        showToast("❌ Gagal simpan script: " + res.reason, "danger");
-      }
     });
-  });
+
+    const result = await res.json();
+    if (result.success) {
+      msg.textContent = "";
+      showToast("✅ Script berhasil disimpan!", "success");
+      document.getElementById("scriptModal").dismiss();
+    } else {
+      msg.textContent = "❌ Gagal simpan script: " + (result.reason || "Tidak diketahui");
+    }
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "❌ Terjadi error saat menyimpan.";
+  }
 }
 
 function closeScriptModal() {
-  document.getElementById("scriptModal").dismiss();
+  const modal = document.getElementById("scriptModal");
+  if (modal) modal.dismiss();
 }
 </script>
 

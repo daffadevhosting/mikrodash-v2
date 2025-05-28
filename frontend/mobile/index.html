@@ -29,6 +29,7 @@ ion-content {
   {% include /mobile/editRouterModal.html %}
   {% include /mobile/userProfileModal.html %}
   {% include /mobile/onliginScript.html %}
+  {% include /mobile/ion-modalTerminal.html %}
 <script>
 function openEditRouterModal() {
   showModal('editRouterModal');
@@ -46,7 +47,7 @@ function openLoginScriptSetting() {
 
 function openTerminal() {
   console.log("🖥️ Buka Terminal");
-  // showModal('terminal-modal');
+  showModal('terminalModal');
 }
 
 function openAdminProfile() {

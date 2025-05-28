@@ -6,6 +6,7 @@
           <ion-card-subtitle>Total Users</ion-card-subtitle>
           <ion-card-title id="total-users">...</ion-card-title>
         </ion-card-header>
+        <i class="bi bi-person-lines-fill mini-card-icon display-1"></i>
       </ion-card>
     </ion-col>
 
@@ -15,6 +16,7 @@
           <ion-card-subtitle>User Aktif</ion-card-subtitle>
           <ion-card-title id="online-users">...</ion-card-title>
         </ion-card-header>
+        <i class="bi bi-wifi mini-card-icon display-1"></i>
       </ion-card>
     </ion-col>
   </ion-row>
@@ -26,6 +28,7 @@
           <ion-card-subtitle>Harian</ion-card-subtitle>
           <ion-card-title id="daily-income">...</ion-card-title>
         </ion-card-header>
+        <i class="bi bi-cash-coin mini-card-icon display-1"></i>
       </ion-card>
     </ion-col>
 
@@ -35,6 +38,7 @@
           <ion-card-subtitle>Bulanan</ion-card-subtitle>
           <ion-card-title id="monthly-income">...</ion-card-title>
         </ion-card-header>
+        <i class="bi bi-wallet2 mini-card-icon display-1"></i>
       </ion-card>
     </ion-col>
   </ion-row>
@@ -44,6 +48,14 @@
     text-align: center;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .mini-card-icon {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 4rem;
+    color: #f2f2f23b;
+    pointer-events: none;
   }
 
   .mini-card ion-card-title {

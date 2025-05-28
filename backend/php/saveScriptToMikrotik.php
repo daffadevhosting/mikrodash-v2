@@ -1,4 +1,4 @@
-<?php
+<?php //saveScriptToMikrotik.php
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -58,9 +58,20 @@ try {
     $client = new RouterOS\Client($mikrotikData['ip'], $mikrotikData['username'], $mikrotikData['password']);
 
     // Update profile
+    // Cari ID berdasarkan nama profile
+    $findReq = new RouterOS\Request('/ip/hotspot/user/profile/print');
+    $findReq->setQuery(RouterOS\Query::where('name', $data['profileName']));
+    $findRes = $client->sendSync($findReq);
+
+    if (count($findRes) === 0) {
+        echo json_encode(['success' => false, 'reason' => 'Profile tidak ditemukan di Mikrotik']);
+        exit;
+    }
+
+    $profileId = $findRes[0]->getProperty('.id');
+
     $update = new RouterOS\Request('/ip/hotspot/user/profile/set');
-    $update->setArgument('.id', "*". $data['profileName']); // Gunakan .id jika tahu ID, atau pakai find by name
-    $update->setArgument('name', $data['profileName']);
+    $update->setArgument('.id', $profileId);
 
     if (!empty($data['on_login_script'])) {
         $update->setArgument('on-login', $data['on_login_script']);
@@ -68,7 +79,18 @@ try {
 
     $client->sendSync($update);
 
-    // Buat scheduler jika ada
+    // Hapus scheduler lama (jika ada)
+    $schedCheck = new RouterOS\Request('/system/script/print');
+    $schedCheck->setQuery(RouterOS\Query::where('name', 'auto_' . $data['profileName']));
+    $schedResults = $client->sendSync($schedCheck);
+
+    foreach ($schedResults as $sched) {
+        $del = new RouterOS\Request('/system/script/remove');
+        $del->setArgument('.id', $sched->getProperty('.id'));
+        $client->sendSync($del);
+    }
+
+    // Tambahkan script baru
     if (!empty($data['scheduler_script'])) {
         $scriptReq = new RouterOS\Request('/system/script/add');
         $scriptReq->setArgument('name', 'auto_' . $data['profileName']);
