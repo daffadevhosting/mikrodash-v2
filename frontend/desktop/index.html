@@ -19,3 +19,8 @@ permalink: /dashboard
   {% include /desktop/userActive.html %}
   </div>
 </div>
+  <script>
+    if (window.innerWidth <= 768) {
+      location.replace("/mobile");
+    }
+  </script>

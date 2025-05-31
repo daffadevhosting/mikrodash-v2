@@ -125,5 +125,10 @@ permalink: /m/login
   });
   </script>
 <script src="{{ '/assets/js/ion-toast.js' | relative_url }}"></script>
+  <script>
+    if (window.innerWidth > 768) {
+      location.replace("/desktop");
+    }
+  </script>
 </body>
 </html>

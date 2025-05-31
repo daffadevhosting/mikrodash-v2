@@ -78,3 +78,8 @@ function showModal(modalId) {
   const settingsPage = document.querySelector('#settings-page');
   settingsNav.root = settingsPage;
 </script>
+  <script>
+    if (window.innerWidth > 768) {
+      location.replace("/desktop");
+    }
+  </script>
